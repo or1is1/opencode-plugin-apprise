@@ -39,7 +39,7 @@ describe("Dedup Module", () => {
   });
 
   it("Test 1: Same payload called twice → first returns false, second returns true", () => {
-    const checker = createDedupChecker(true);
+    const checker = createDedupChecker();
 
     const firstCall = checker.isDuplicate(payload1);
     expect(firstCall).toBe(false); // First call should not be a duplicate
@@ -49,7 +49,7 @@ describe("Dedup Module", () => {
   });
 
   it("Test 2: Different payloads → both return false", () => {
-    const checker = createDedupChecker(true);
+    const checker = createDedupChecker();
 
     const result1 = checker.isDuplicate(payload1);
     expect(result1).toBe(false);
@@ -58,18 +58,8 @@ describe("Dedup Module", () => {
     expect(result2).toBe(false); // Different payload should not be duplicate
   });
 
-  it("Test 3: When enabled=false → always returns false (never duplicate)", () => {
-    const checker = createDedupChecker(false);
-
-    const firstCall = checker.isDuplicate(payload1);
-    expect(firstCall).toBe(false);
-
-    const secondCall = checker.isDuplicate(payload1);
-    expect(secondCall).toBe(false); // Even same payload returns false when disabled
-  });
-
   it("Test 4: clear() resets state — after clear, same payload returns false again", () => {
-    const checker = createDedupChecker(true);
+    const checker = createDedupChecker();
 
     const firstCall = checker.isDuplicate(payload1);
     expect(firstCall).toBe(false);
@@ -84,7 +74,7 @@ describe("Dedup Module", () => {
   });
 
   it("Test 5: MAX_SIZE eviction — after 100 entries, oldest is evicted (LRU-style)", () => {
-    const checker = createDedupChecker(true);
+    const checker = createDedupChecker();
 
     // Add 100 unique payloads
     for (let i = 0; i < 100; i++) {
@@ -144,7 +134,7 @@ describe("Dedup Module", () => {
   });
 
   it("Test 6: TTL expiry simulation — after TTL, same payload returns false again", () => {
-    const checker = createDedupChecker(true);
+    const checker = createDedupChecker();
 
     const firstCall = checker.isDuplicate(payload1);
     expect(firstCall).toBe(false);

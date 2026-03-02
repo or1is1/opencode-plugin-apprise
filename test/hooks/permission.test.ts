@@ -7,9 +7,6 @@ import { createPermissionHooks } from "../../src/hooks/permission.js";
 
 function makeConfig(): PluginConfig {
   return {
-    idleDelayMs: 3000,
-    truncateLength: 1500,
-    deduplication: true,
     tag: undefined,
   };
 }

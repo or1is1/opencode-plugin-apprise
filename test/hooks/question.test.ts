@@ -6,9 +6,6 @@ import { createQuestionHooks } from "../../src/hooks/question.js";
 
 function makeConfig(): PluginConfig {
   return {
-    idleDelayMs: 3000,
-    truncateLength: 1500,
-    deduplication: true,
     tag: undefined,
   };
 }

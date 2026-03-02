@@ -169,7 +169,7 @@ describe("Integration + Edge Cases", () => {
   });
 
   it("dedup checker + formatter integration only notifies once for duplicate payload", async () => {
-    const dedup = createDedupChecker(true);
+    const dedup = createDedupChecker();
     const sendSpy = spyOn(notifier, "sendNotification").mockResolvedValue({
       success: true,
       exitCode: 0,
@@ -177,9 +177,6 @@ describe("Integration + Edge Cases", () => {
     });
 
     const config: PluginConfig = {
-      idleDelayMs: 3000,
-      truncateLength: 1500,
-      deduplication: true,
       tag: undefined,
     };
 
@@ -216,9 +213,7 @@ describe("Integration + Edge Cases", () => {
   it("loads defaults with no optional notification env vars", () => {
     const config = loadConfig();
 
-    expect(config.idleDelayMs).toBe(3000);
-    expect(config.truncateLength).toBe(1500);
-    expect(config.deduplication).toBe(true);
+    expect(config.tag).toBeUndefined();
   });
 
   it("formats todo status with completed, in-progress, pending, and ignores cancelled", () => {

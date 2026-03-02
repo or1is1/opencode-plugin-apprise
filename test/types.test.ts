@@ -12,23 +12,14 @@ describe("Type Definitions", () => {
   describe("PluginConfig", () => {
     it("should accept a valid PluginConfig object", () => {
       const config: PluginConfig = {
-        idleDelayMs: 3000,
-        truncateLength: 1500,
-        deduplication: true,
         tag: "my-tag",
       };
 
-      // Runtime shape verification
-      expect(typeof config.idleDelayMs).toBe("number");
-      expect(typeof config.truncateLength).toBe("number");
-      expect(typeof config.deduplication).toBe("boolean");
+      expect(config.tag).toBe("my-tag");
     });
 
     it("should accept PluginConfig with undefined optional fields", () => {
       const config: PluginConfig = {
-        idleDelayMs: 5000,
-        truncateLength: 2000,
-        deduplication: false,
         tag: undefined,
       };
 

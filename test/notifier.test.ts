@@ -24,9 +24,6 @@ function createMockProcess(exitCode: number, stderrText = ""): ReturnType<typeof
 }
 
 const baseConfig: PluginConfig = {
-  idleDelayMs: 3000,
-  truncateLength: 1500,
-  deduplication: true,
   tag: undefined,
 };
 
@@ -81,7 +78,6 @@ describe("Notifier Module", () => {
   it("sendNotification() adds --tag when tag is set", async () => {
     const spawnSpy = spyOn(Bun, "spawn").mockReturnValue(createMockProcess(0));
     const config: PluginConfig = {
-      ...baseConfig,
       tag: "opencode",
     };
 

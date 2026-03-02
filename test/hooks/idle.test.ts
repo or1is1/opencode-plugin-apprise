@@ -9,7 +9,7 @@ import { createIdleHook } from "../../src/hooks/idle.js";
 type MockClient = {
   session: {
     messages: ReturnType<typeof mock>;
-    todo: ReturnType<typeof mock>;
+    todos: ReturnType<typeof mock>;
   };
 };
 
@@ -17,11 +17,8 @@ function makeInput(client: MockClient): PluginInput {
   return { client } as unknown as PluginInput;
 }
 
-function makeConfig(idleDelayMs: number): PluginConfig {
+function makeConfig(): PluginConfig {
   return {
-    idleDelayMs,
-    truncateLength: 1500,
-    deduplication: true,
     tag: undefined,
   };
 }
@@ -48,26 +45,25 @@ describe("createIdleHook", () => {
     sendSpy.mockClear();
   });
 
-  it("sets a timer on session.idle", async () => {
-    const setTimeoutSpy = spyOn(globalThis, "setTimeout");
+  it("fetches session data on session.idle", async () => {
     const client: MockClient = {
       session: {
-        messages: mock(() => Promise.resolve({ data: [] })),
-        todo: mock(() => Promise.resolve({ data: [] })),
+        messages: mock(() => Promise.resolve([])),
+        todos: mock(() => Promise.resolve([])),
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(100), makeDedup());
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup());
 
     await hook({
       event: { type: "session.idle", properties: { sessionID: "s-1" } } as OpencodeEvent,
     });
 
-    expect(setTimeoutSpy).toHaveBeenCalled();
-    setTimeoutSpy.mockRestore();
+    expect(client.session.messages).toHaveBeenCalledWith({ path: { id: "s-1" } });
+    expect(client.session.todos).toHaveBeenCalledWith({ path: { id: "s-1" } });
   });
 
-  it("sends idle notification after delay", async () => {
+  it("sends idle notification immediately", async () => {
     let dedupPayload: NotificationPayload | undefined;
     const dedup: DedupChecker = {
       isDuplicate: mock((payload: NotificationPayload) => {
@@ -80,77 +76,51 @@ describe("createIdleHook", () => {
     const client: MockClient = {
       session: {
         messages: mock(() =>
-          Promise.resolve({
-            data: [
-              {
-                info: { role: "user" },
-                parts: [{ type: "text", text: "Need an update" }],
-              },
-              {
-                info: { role: "assistant" },
-                parts: [{ type: "text", text: "Working on it" }],
-              },
-            ],
-          })
+          Promise.resolve([
+            {
+              role: "user",
+              content: [{ text: "Need an update" }],
+            },
+            {
+              role: "assistant",
+              content: [{ text: "Working on it" }],
+            },
+          ])
         ),
-        todo: mock(() =>
-          Promise.resolve({
-            data: [{ id: "1", content: "Ship feature", status: "in_progress", priority: "high" }],
-          })
+        todos: mock(() =>
+          Promise.resolve([
+            { content: "Ship feature", status: "in_progress" },
+          ])
         ),
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(0), dedup);
+    const hook = createIdleHook(makeInput(client), makeConfig(), dedup);
 
     await hook({
       event: { type: "session.idle", properties: { sessionID: "s-2" } } as OpencodeEvent,
     });
-    await new Promise((resolve) => setTimeout(resolve, 1));
 
     expect(dedupPayload?.type).toBe("idle");
+    expect(dedupPayload?.context.userRequest).toBe("Need an update");
+    expect(dedupPayload?.context.agentResponse).toBe("Working on it");
+    expect(dedupPayload?.context.todoStatus).toContain("in_progress");
     expect(sendSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it("cancels pending idle timer on message.updated", async () => {
-    const clearTimeoutSpy = spyOn(globalThis, "clearTimeout");
-    const client: MockClient = {
-      session: {
-        messages: mock(() => Promise.resolve({ data: [] })),
-        todo: mock(() => Promise.resolve({ data: [] })),
-      },
-    };
-
-    const hook = createIdleHook(makeInput(client), makeConfig(200), makeDedup());
-
-    await hook({
-      event: { type: "session.idle", properties: { sessionID: "s-3" } } as OpencodeEvent,
-    });
-    await hook({
-      event: {
-        type: "message.updated",
-        properties: { info: { sessionID: "s-3" } },
-      } as OpencodeEvent,
-    });
-
-    expect(clearTimeoutSpy).toHaveBeenCalled();
-    clearTimeoutSpy.mockRestore();
   });
 
   it("does not send notification for duplicate payload", async () => {
     const client: MockClient = {
       session: {
-        messages: mock(() => Promise.resolve({ data: [] })),
-        todo: mock(() => Promise.resolve({ data: [] })),
+        messages: mock(() => Promise.resolve([])),
+        todos: mock(() => Promise.resolve([])),
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(0), makeDedup(true));
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup(true));
 
     await hook({
       event: { type: "session.idle", properties: { sessionID: "s-4" } } as OpencodeEvent,
     });
-    await new Promise((resolve) => setTimeout(resolve, 1));
 
     expect(sendSpy).not.toHaveBeenCalled();
   });
@@ -160,18 +130,17 @@ describe("createIdleHook", () => {
     const client: MockClient = {
       session: {
         messages: mock(() => Promise.reject(new Error("boom"))),
-        todo: mock(() => Promise.resolve({ data: [] })),
+        todos: mock(() => Promise.resolve([])),
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(0), makeDedup());
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup());
 
     await hook({
       event: { type: "session.idle", properties: { sessionID: "s-5" } } as OpencodeEvent,
     });
-    await new Promise((resolve) => setTimeout(resolve, 1));
 
-    expect(sendSpy).not.toHaveBeenCalled();
+    expect(sendSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy).toHaveBeenCalled();
     warnSpy.mockRestore();
   });

@@ -7,9 +7,6 @@ import { createBackgroundHook } from "../../src/hooks/background.js";
 
 function makeConfig(): PluginConfig {
   return {
-    idleDelayMs: 3000,
-    truncateLength: 1500,
-    deduplication: true,
     tag: undefined,
   };
 }
