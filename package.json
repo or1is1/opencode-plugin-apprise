@@ -3,17 +3,18 @@
   "version": "1.0.0",
   "description": "OpenCode plugin that sends rich notifications via Apprise CLI when the agent needs your attention",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/opencode-apprise-notify.js",
+  "types": "dist/opencode-apprise-notify.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/opencode-apprise-notify.d.ts",
+      "import": "./dist/opencode-apprise-notify.js",
+      "default": "./dist/opencode-apprise-notify.js"
     }
   },
   "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target node --format esm",
+    "build": "bun build src/index.ts --outfile dist/opencode-apprise-notify.js --target node --format esm",
     "test": "bun test",
     "prepublishOnly": "bun run build"
   },

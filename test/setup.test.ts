@@ -15,11 +15,11 @@ describe("Project Setup", () => {
     expect(typeof plugin.default).toBe("function");
   });
 
-  it("should generate dist/index.js after build", async () => {
+  it("should generate dist/opencode-apprise-notify.js after build", async () => {
     const { execSync } = require("child_process");
     execSync("bun run build", { cwd: resolve(__dirname, "..") });
     
-    const distPath = resolve(__dirname, "../dist/index.js");
+    const distPath = resolve(__dirname, "../dist/opencode-apprise-notify.js");
     const fs = require("fs");
     expect(fs.existsSync(distPath)).toBe(true);
   });
