@@ -15,17 +15,17 @@ const plugin: Plugin = async (input) => {
     validateConfig(config);
   } catch (err: unknown) {
     console.warn(
-      "[opencode-apprise-notify] Configuration error:",
+      "[opencode-plugin-apprise] Configuration error:",
       err instanceof Error ? err.message : err
     );
-    console.warn("[opencode-apprise-notify] Plugin disabled due to configuration error.");
+    console.warn("[opencode-plugin-apprise] Plugin disabled due to configuration error.");
     return {};
   }
 
   const appriseInstalled = await checkAppriseInstalled();
   if (!appriseInstalled) {
-    console.warn("[opencode-apprise-notify] apprise CLI not found. Install with: pip install apprise");
-    console.warn("[opencode-apprise-notify] Plugin disabled.");
+    console.warn("[opencode-plugin-apprise] apprise CLI not found. Install with: pip install apprise");
+    console.warn("[opencode-plugin-apprise] Plugin disabled.");
     return {};
   }
 

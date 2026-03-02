@@ -71,7 +71,7 @@ export function createIdleHook(
         // Session might not have todos — ignore
       }
     } catch (err: unknown) {
-      console.warn("[opencode-apprise-notify] failed to fetch session data:", err);
+      console.warn("[opencode-plugin-apprise] failed to fetch session data:", err);
     }
 
     const payload = createPayload("idle", "📢 OpenCode Attention Required", {

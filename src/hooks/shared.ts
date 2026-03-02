@@ -38,6 +38,6 @@ export async function sendHookNotification(
     const formatted = formatNotification(payload, DEFAULT_TRUNCATE_LENGTH);
     await sendNotification(config, formatted);
   } catch (err: unknown) {
-    console.warn(`[opencode-apprise-notify] ${hookName} hook error:`, err);
+    console.warn(`[opencode-plugin-apprise] ${hookName} hook error:`, err);
   }
 }
