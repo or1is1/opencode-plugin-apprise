@@ -6,15 +6,10 @@ import type { PluginConfig } from "../types.js";
 
 export const DEFAULT_IDLE_DELAY_MS = 3000;
 
-type EventWithSessionID = {
-  properties?: {
-    sessionID?: string;
-    info?: {
-      id?: string;
-      sessionID?: string;
-    };
-  };
-};
+interface SessionMessage {
+  role?: string;
+  content?: unknown;
+}
 
 function extractText(message: unknown): string | undefined {
   if (!message || typeof message !== "object") {
@@ -22,7 +17,7 @@ function extractText(message: unknown): string | undefined {
   }
 
   const parts = Array.isArray(message)
-    ? message.map((p) => typeof p === "string" ? p : (p as any).text || "")
+    ? message.map((p: unknown) => typeof p === "string" ? p : ((p as Record<string, unknown>).text as string) || "")
     : [];
 
   return parts.join("\n").trim() || undefined;
@@ -46,14 +41,16 @@ export function createIdleHook(
     let todoStatus: string | undefined = undefined;
 
     try {
-      const messages = await ctx.client.session.messages({
+      const messagesResponse = await ctx.client.session.messages({
         path: { id: props.sessionID },
       });
+      // SDK wraps response in { data, error } — extract the array
+      const messages = (messagesResponse.data ?? []) as unknown as SessionMessage[];
 
       // Get last user message
       for (let i = messages.length - 1; i >= 0; i--) {
         const msg = messages[i];
-        if (msg.role === "user") {
+        if (msg?.role === "user") {
           userRequest = extractText(msg.content);
           break;
         }
@@ -63,7 +60,7 @@ export function createIdleHook(
       if (userRequest) {
         for (let i = messages.length - 1; i >= 0; i--) {
           const msg = messages[i];
-          if (msg.role === "assistant") {
+          if (msg?.role === "assistant") {
             agentResponse = extractText(msg.content);
             break;
           }
@@ -72,10 +69,12 @@ export function createIdleHook(
 
       // Get todo status
       try {
-        const todos = await ctx.client.session.todos({
+        const todosResponse = await ctx.client.session.todo({
           path: { id: props.sessionID },
         });
-        todoStatus = formatTodoStatus(todos);
+        if (todosResponse.data) {
+          todoStatus = formatTodoStatus(todosResponse.data);
+        }
       } catch {
         // Session might not have todos — ignore
       }

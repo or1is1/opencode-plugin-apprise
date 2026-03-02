@@ -9,7 +9,7 @@ import { createIdleHook } from "../../src/hooks/idle.js";
 type MockClient = {
   session: {
     messages: ReturnType<typeof mock>;
-    todos: ReturnType<typeof mock>;
+    todo: ReturnType<typeof mock>;
   };
 };
 
@@ -48,8 +48,8 @@ describe("createIdleHook", () => {
   it("fetches session data on session.idle", async () => {
     const client: MockClient = {
       session: {
-        messages: mock(() => Promise.resolve([])),
-        todos: mock(() => Promise.resolve([])),
+        messages: mock(() => Promise.resolve({ data: [] })),
+        todo: mock(() => Promise.resolve({ data: [] })),
       },
     };
 
@@ -60,7 +60,7 @@ describe("createIdleHook", () => {
     });
 
     expect(client.session.messages).toHaveBeenCalledWith({ path: { id: "s-1" } });
-    expect(client.session.todos).toHaveBeenCalledWith({ path: { id: "s-1" } });
+    expect(client.session.todo).toHaveBeenCalledWith({ path: { id: "s-1" } });
   });
 
   it("sends idle notification immediately", async () => {
@@ -76,7 +76,7 @@ describe("createIdleHook", () => {
     const client: MockClient = {
       session: {
         messages: mock(() =>
-          Promise.resolve([
+          Promise.resolve({ data: [
             {
               role: "user",
               content: [{ text: "Need an update" }],
@@ -85,12 +85,12 @@ describe("createIdleHook", () => {
               role: "assistant",
               content: [{ text: "Working on it" }],
             },
-          ])
+          ] })
         ),
-        todos: mock(() =>
-          Promise.resolve([
+        todo: mock(() =>
+          Promise.resolve({ data: [
             { content: "Ship feature", status: "in_progress" },
-          ])
+          ] })
         ),
       },
     };
@@ -111,8 +111,8 @@ describe("createIdleHook", () => {
   it("does not send notification for duplicate payload", async () => {
     const client: MockClient = {
       session: {
-        messages: mock(() => Promise.resolve([])),
-        todos: mock(() => Promise.resolve([])),
+        messages: mock(() => Promise.resolve({ data: [] })),
+        todo: mock(() => Promise.resolve({ data: [] })),
       },
     };
 
@@ -130,7 +130,7 @@ describe("createIdleHook", () => {
     const client: MockClient = {
       session: {
         messages: mock(() => Promise.reject(new Error("boom"))),
-        todos: mock(() => Promise.resolve([])),
+        todo: mock(() => Promise.resolve({ data: [] })),
       },
     };
 
