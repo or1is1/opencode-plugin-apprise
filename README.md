@@ -63,7 +63,27 @@ The plugin sends notifications for these events:
 - **Background**: Triggered when a background task finishes.
 - **Permission**: Triggered when a tool requires explicit user permission.
 
+## Notification Examples
+
+```
+📢 OpenCode Attention Required
+📝 Request: Build a REST API
+🤖 Response: I've created the Express server...
+📋 Todo: ✅ 3 done | ▶️ 1 in_progress | ⚪ 2 pending
+```
+
 ## Apprise Config File
+
+You can use a YAML configuration file instead of environment variables. Example `~/.apprise.yml`:
+
+```yaml
+# ~/.apprise.yml
+urls:
+  - slack://TokenA/TokenB/TokenC
+  - discord://webhook_id/webhook_token
+  - tgram://bottoken/ChatID
+```
+
 
 You can use a YAML configuration file instead of environment variables. Example `~/.apprise.yml`:
 
@@ -72,6 +92,13 @@ urls:
   - slack://T/B/C
   - discord://id/token
 ```
+
+## Troubleshooting
+
+- **apprise CLI not found**: Run `pip install apprise` to install the required dependency.
+- **No notifications received**: Check your `APPRISE_URLS` format and test with `apprise -t test -b test URL`.
+- **Too many notifications**: Set `OPENCODE_NOTIFY_DEDUP=true` (default) to enable deduplication.
+- **Notifications cut off**: Increase `OPENCODE_NOTIFY_TRUNCATE` to allow longer messages.
 
 ## License
 
