@@ -46,12 +46,6 @@ export async function sendNotification(
     args.push("--tag", config.tag);
   }
 
-  if (config.appriseConfigPath) {
-    args.push("--config", config.appriseConfigPath);
-  } else {
-    args.push(...config.appriseUrls);
-  }
-
   try {
     const proc = Bun.spawn(args, {
       timeout: 30_000,

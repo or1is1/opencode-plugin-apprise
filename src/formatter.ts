@@ -11,6 +11,8 @@ const TYPE_MAP: Record<string, AppriseNotificationType> = {
   permission: "warning",
 };
 
+export const DEFAULT_TRUNCATE_LENGTH = 1500;
+
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
 
@@ -27,8 +29,7 @@ export function truncateText(text: string, maxLength: number): string {
 
   // Safety net: if still too long, fall back to char truncation
   if (result.length > maxLength) {
-    const keepLength = maxLength - 20;
-    return text.slice(0, keepLength) + "\n...(truncated)";
+    return text.slice(0, maxLength - 20) + "\n...(truncated)";
   }
 
   return result;
@@ -49,7 +50,7 @@ export function formatTodoStatus(todos: Array<{ status: string; content: string 
 
 export function formatNotification(
   payload: NotificationPayload,
-  truncateLength: number = 1500
+  truncateLength: number = DEFAULT_TRUNCATE_LENGTH,
 ): FormattedNotification {
   const { type, title, context } = payload;
   const notificationType = TYPE_MAP[type] ?? "info";

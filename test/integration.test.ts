@@ -7,7 +7,7 @@ import plugin from "../src/index.js";
 import * as notifier from "../src/notifier.js";
 import type { NotificationPayload, PluginConfig } from "../src/types.js";
 
-const ENV_KEYS = ["APPRISE_URLS", "APPRISE_CONFIG"] as const;
+const ENV_KEYS = [] as const;
 const originalEnv = new Map<string, string | undefined>();
 
 for (const key of ENV_KEYS) {
@@ -51,7 +51,6 @@ describe("Integration + Edge Cases", () => {
   });
 
   it("full plugin initialization flow returns all expected hooks", async () => {
-    process.env.APPRISE_URLS = "slack://T/B/C";
     spyOn(notifier, "checkAppriseInstalled").mockResolvedValue(true);
 
     const hooks = await plugin(makePluginInput());
@@ -62,19 +61,7 @@ describe("Integration + Edge Cases", () => {
     expect(typeof hooks["permission.ask"]).toBe("function");
   });
 
-  it("plugin gracefully disables when configuration is missing", async () => {
-    delete process.env.APPRISE_URLS;
-    delete process.env.APPRISE_CONFIG;
-    const warnSpy = spyOn(console, "warn").mockImplementation(() => {});
-
-    const hooks = await plugin(makePluginInput());
-
-    expect(hooks).toEqual({});
-    expect(warnSpy).toHaveBeenCalled();
-  });
-
   it("plugin gracefully disables when apprise is not installed", async () => {
-    process.env.APPRISE_URLS = "slack://T/B/C";
     spyOn(notifier, "checkAppriseInstalled").mockResolvedValue(false);
     const warnSpy = spyOn(console, "warn").mockImplementation(() => {});
 
@@ -190,8 +177,6 @@ describe("Integration + Edge Cases", () => {
     });
 
     const config: PluginConfig = {
-      appriseUrls: ["mock://apprise"],
-      appriseConfigPath: undefined,
       idleDelayMs: 3000,
       truncateLength: 1500,
       deduplication: true,
@@ -228,16 +213,12 @@ describe("Integration + Edge Cases", () => {
     expect(sendSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("loads multiple APPRISE_URLS entries from config", () => {
-    process.env.APPRISE_URLS = "slack://T/B/C discord://id/token tgram://bot/chat";
-
+  it("loads defaults with no optional notification env vars", () => {
     const config = loadConfig();
 
-    expect(config.appriseUrls).toEqual([
-      "slack://T/B/C",
-      "discord://id/token",
-      "tgram://bot/chat",
-    ]);
+    expect(config.idleDelayMs).toBe(3000);
+    expect(config.truncateLength).toBe(1500);
+    expect(config.deduplication).toBe(true);
   });
 
   it("formats todo status with completed, in-progress, pending, and ignores cancelled", () => {

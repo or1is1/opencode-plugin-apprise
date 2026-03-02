@@ -12,8 +12,6 @@ describe("Type Definitions", () => {
   describe("PluginConfig", () => {
     it("should accept a valid PluginConfig object", () => {
       const config: PluginConfig = {
-        appriseUrls: ["apprise://service/token"],
-        appriseConfigPath: "/path/to/config",
         idleDelayMs: 3000,
         truncateLength: 1500,
         deduplication: true,
@@ -21,8 +19,6 @@ describe("Type Definitions", () => {
       };
 
       // Runtime shape verification
-      expect(typeof config.appriseUrls).toBe("object");
-      expect(Array.isArray(config.appriseUrls)).toBe(true);
       expect(typeof config.idleDelayMs).toBe("number");
       expect(typeof config.truncateLength).toBe("number");
       expect(typeof config.deduplication).toBe("boolean");
@@ -30,15 +26,12 @@ describe("Type Definitions", () => {
 
     it("should accept PluginConfig with undefined optional fields", () => {
       const config: PluginConfig = {
-        appriseUrls: [],
-        appriseConfigPath: undefined,
         idleDelayMs: 5000,
         truncateLength: 2000,
         deduplication: false,
         tag: undefined,
       };
 
-      expect(config.appriseConfigPath).toBeUndefined();
       expect(config.tag).toBeUndefined();
     });
   });

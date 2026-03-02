@@ -3,7 +3,7 @@ import type { PluginInput } from "@opencode-ai/plugin";
 import plugin from "../src/index.js";
 import * as notifier from "../src/notifier.js";
 
-const ENV_KEYS = ["APPRISE_URLS", "APPRISE_CONFIG"] as const;
+const ENV_KEYS = [] as const;
 
 const originalEnv = new Map<string, string | undefined>();
 for (const key of ENV_KEYS) {
@@ -49,19 +49,7 @@ describe("Plugin Entrypoint", () => {
     expect(typeof plugin).toBe("function");
   });
 
-  it("returns empty hooks when config is invalid", async () => {
-    delete process.env.APPRISE_URLS;
-    delete process.env.APPRISE_CONFIG;
-    const warnSpy = spyOn(console, "warn").mockImplementation(() => {});
-
-    const hooks = await plugin(makePluginInput());
-
-    expect(hooks).toEqual({});
-    expect(warnSpy).toHaveBeenCalled();
-  });
-
   it("returns empty hooks when apprise is not installed", async () => {
-    process.env.APPRISE_URLS = "slack://T/B/C";
     const checkSpy = spyOn(notifier, "checkAppriseInstalled").mockResolvedValue(false);
     const warnSpy = spyOn(console, "warn").mockImplementation(() => {});
 
@@ -73,7 +61,6 @@ describe("Plugin Entrypoint", () => {
   });
 
   it("returns all expected hooks when config is valid and apprise is installed", async () => {
-    process.env.APPRISE_URLS = "slack://T/B/C";
     spyOn(notifier, "checkAppriseInstalled").mockResolvedValue(true);
 
     const hooks = await plugin(makePluginInput());
@@ -85,7 +72,6 @@ describe("Plugin Entrypoint", () => {
   });
 
   it("includes all required hook keys", async () => {
-    process.env.APPRISE_URLS = "slack://T/B/C";
     spyOn(notifier, "checkAppriseInstalled").mockResolvedValue(true);
 
     const hooks = await plugin(makePluginInput());

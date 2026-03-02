@@ -1,24 +1,10 @@
 /**
- * Plugin configuration loaded from environment variables
+ * Minimal plugin configuration.
+ * All values handled by Apprise defaults.
  */
 export interface PluginConfig {
-  /** Apprise URLs from APPRISE_URLS (comma/space separated) */
-  appriseUrls: string[];
-
-  /** Path to Apprise config file from APPRISE_CONFIG */
-  appriseConfigPath: string | undefined;
-
-  /** Idle delay in milliseconds from OPENCODE_NOTIFY_IDLE_DELAY (default: 3000) */
-  idleDelayMs: number;
-
-  /** Truncate notification body to this length from OPENCODE_NOTIFY_TRUNCATE (default: 1500) */
-  truncateLength: number;
-
-  /** Enable deduplication from OPENCODE_NOTIFY_DEDUP (default: true) */
-  deduplication: boolean;
-
-  /** Optional tag for notifications from OPENCODE_NOTIFY_TAG */
-  tag: string | undefined;
+  /** Optional tag for filtering notifications */
+  tag?: string;
 }
 
 /**

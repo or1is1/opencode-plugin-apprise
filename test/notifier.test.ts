@@ -24,8 +24,6 @@ function createMockProcess(exitCode: number, stderrText = ""): ReturnType<typeof
 }
 
 const baseConfig: PluginConfig = {
-  appriseUrls: ["discord://abc/xyz"],
-  appriseConfigPath: undefined,
   idleDelayMs: 3000,
   truncateLength: 1500,
   deduplication: true,
@@ -60,7 +58,7 @@ describe("Notifier Module", () => {
     expect(installed).toBe(false);
   });
 
-  it("sendNotification() builds URL mode args", async () => {
+  it("sendNotification() builds args without URLs or --config", async () => {
     const spawnSpy = spyOn(Bun, "spawn").mockReturnValue(createMockProcess(0));
 
     const result = await sendNotification(baseConfig, baseNotification);
@@ -75,33 +73,6 @@ describe("Notifier Module", () => {
         "Everything passed",
         "--notification-type",
         "success",
-        "discord://abc/xyz",
-      ],
-      expect.objectContaining({ timeout: 30_000, stderr: "pipe" })
-    );
-  });
-
-  it("sendNotification() builds config mode args", async () => {
-    const spawnSpy = spyOn(Bun, "spawn").mockReturnValue(createMockProcess(0));
-    const config: PluginConfig = {
-      ...baseConfig,
-      appriseUrls: [],
-      appriseConfigPath: "/tmp/apprise.yml",
-    };
-
-    await sendNotification(config, baseNotification);
-
-    expect(spawnSpy).toHaveBeenCalledWith(
-      [
-        "apprise",
-        "-t",
-        "Build Complete",
-        "-b",
-        "Everything passed",
-        "--notification-type",
-        "success",
-        "--config",
-        "/tmp/apprise.yml",
       ],
       expect.objectContaining({ timeout: 30_000, stderr: "pipe" })
     );

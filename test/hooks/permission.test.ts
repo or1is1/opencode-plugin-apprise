@@ -7,8 +7,6 @@ import { createPermissionHooks } from "../../src/hooks/permission.js";
 
 function makeConfig(): PluginConfig {
   return {
-    appriseUrls: ["mock://apprise"],
-    appriseConfigPath: undefined,
     idleDelayMs: 3000,
     truncateLength: 1500,
     deduplication: true,
@@ -65,10 +63,10 @@ describe("createPermissionHooks", () => {
       await hooks.permissionAsk(permission, { status: "ask" });
 
       expect(sendSpy).toHaveBeenCalledTimes(1);
-      const call = sendSpy.mock.calls[0];
+      const call = sendSpy.mock.calls[0]!;
       expect(call[1].title).toBe("🔐 OpenCode Permission Required");
       expect(dedup.isDuplicate).toHaveBeenCalled();
-      const payload = (dedup.isDuplicate as ReturnType<typeof mock>).mock.calls[0][0] as NotificationPayload;
+      const payload = (dedup.isDuplicate as ReturnType<typeof mock>).mock.calls[0]![0] as NotificationPayload;
       expect(payload.type).toBe("permission");
       expect(payload.context.toolName).toBe("bash");
       expect(payload.context.action).toBe("execute rm -rf");
@@ -105,7 +103,7 @@ describe("createPermissionHooks", () => {
       });
 
       expect(sendSpy).toHaveBeenCalledTimes(1);
-      const call = sendSpy.mock.calls[0];
+      const call = sendSpy.mock.calls[0]!;
       expect(call[1].title).toBe("🔐 OpenCode Permission Required");
     });
 

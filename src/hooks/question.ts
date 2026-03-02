@@ -1,6 +1,6 @@
 import type { Hooks } from "@opencode-ai/plugin";
 import type { DedupChecker } from "../dedup.js";
-import { formatNotification } from "../formatter.js";
+import { formatNotification, DEFAULT_TRUNCATE_LENGTH } from "../formatter.js";
 import { sendNotification } from "../notifier.js";
 import type { PluginConfig } from "../types.js";
 
@@ -12,63 +12,95 @@ export interface QuestionHooks {
 export function createQuestionHooks(
   config: PluginConfig,
   dedup: DedupChecker,
-  delayMs: number = 30_000
 ): QuestionHooks {
-  // Track pending timers per callID
-  const pendingTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  const timers = new Map<string, NodeJS.Timeout>();
 
-  const before: NonNullable<Hooks["tool.execute.before"]> = async (input, output) => {
-    // Case-insensitive match for "question" tool
-    if (input.tool.toLowerCase() !== "question") return;
+  const before: NonNullable<Hooks["tool.execute.before"]> = async ({
+    tool,
+    sessionID,
+    callID,
+  }) => {
+    // Case-insensitive check for "question" tool
+    if (tool.toLowerCase() !== "question") return;
 
-    const { callID } = input;
-
-    // Extract question and options from args
-    // Question tool args shape: { question: string, options?: string[] }
-    const args = output.args as { question?: string; options?: string[] } | undefined;
-    const questionText = args?.question;
-    const options = args?.options;
-
-    const payload = {
-      type: "question" as const,
-      title: "❓ OpenCode Question",
-      context: {
-        userRequest: undefined,
-        agentResponse: undefined,
-        question: questionText,
-        options,
-        todoStatus: undefined,
-        taskName: undefined,
-        toolName: "Question",
-        action: undefined,
-      },
-    };
-
-    if (dedup.isDuplicate(payload)) return;
-
-    // Set a delayed notification — if user answers quickly, cancel via after hook
+    // Schedule notification after 30 seconds (allow quick user response)
     const timer = setTimeout(async () => {
-      pendingTimers.delete(callID);
       try {
-        const formatted = formatNotification(payload, config.truncateLength);
-        await sendNotification(config, formatted);
-      } catch (err: unknown) {
-        console.warn("[opencode-apprise-notify] question hook error:", err);
-      }
-    }, delayMs);
+        const messages = await fetchMessages(sessionID);
 
-    pendingTimers.set(callID, timer);
+        let userRequest: string | undefined = undefined;
+        let question: string | undefined = undefined;
+        let options: string[] | undefined = undefined;
+
+        // Find the question tool call
+        for (const msg of messages) {
+          const content = msg.content;
+          if (typeof content === "object" && Array.isArray(content)) {
+            for (const part of content) {
+              if (part.type === "tool_use") {
+                if (part.name === "question" && part.input) {
+                  question = part.input.question;
+                  options = part.input.options;
+                } else if (part.type === "text" && part.text) {
+                  userRequest = part.text;
+                }
+              }
+            }
+          }
+        }
+
+        if (!question || !options) return;
+
+        const payload = {
+          type: "question" as const,
+          title: "❓ OpenCode Question",
+          context: {
+            userRequest,
+            agentResponse: undefined,
+            question,
+            options,
+            todoStatus: undefined,
+            taskName: undefined,
+            toolName: "Question",
+            action: undefined,
+          },
+        };
+
+        if (dedup.isDuplicate(payload)) return;
+
+        try {
+          const formatted = formatNotification(payload, DEFAULT_TRUNCATE_LENGTH);
+          await sendNotification(config, formatted);
+        } catch (err: unknown) {
+          console.warn("[opencode-apprise-notify] question hook error:", err);
+        }
+      } catch (err: unknown) {
+        console.warn("[opencode-apprise-notify] failed to fetch messages for question:", err);
+      }
+    }, 30_000);
+
+    timers.set(callID, timer);
   };
 
-  const after: NonNullable<Hooks["tool.execute.after"]> = async (input, _output) => {
-    // Cancel pending timer if user answered the question
-    if (input.tool.toLowerCase() !== "question") return;
-    const timer = pendingTimers.get(input.callID);
+  const after: NonNullable<Hooks["tool.execute.after"]> = async ({
+    tool,
+    callID,
+  }) => {
+    if (tool.toLowerCase() !== "question") return;
+
+    const timer = timers.get(callID);
     if (timer) {
       clearTimeout(timer);
-      pendingTimers.delete(input.callID);
+      timers.delete(callID);
     }
   };
 
   return { before, after };
+}
+
+async function fetchMessages(
+  sessionID: string,
+): Promise<Array<{ role: string; content: unknown }>> {
+  // This is a placeholder — in real implementation, this would fetch from OpenCode client
+  return [];
 }

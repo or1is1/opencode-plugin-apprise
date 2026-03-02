@@ -6,8 +6,6 @@ import { createQuestionHooks } from "../../src/hooks/question.js";
 
 function makeConfig(): PluginConfig {
   return {
-    appriseUrls: ["mock://apprise"],
-    appriseConfigPath: undefined,
     idleDelayMs: 3000,
     truncateLength: 1500,
     deduplication: true,

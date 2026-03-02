@@ -18,7 +18,7 @@ const plugin: Plugin = async (input) => {
       "[opencode-apprise-notify] Configuration error:",
       err instanceof Error ? err.message : err
     );
-    console.warn("[opencode-apprise-notify] Plugin disabled. Set APPRISE_URLS or APPRISE_CONFIG to enable.");
+    console.warn("[opencode-apprise-notify] Plugin disabled due to configuration error.");
     return {};
   }
 
@@ -29,7 +29,7 @@ const plugin: Plugin = async (input) => {
     return {};
   }
 
-  const dedup = createDedupChecker(config.deduplication);
+  const dedup = createDedupChecker();
 
   const idleHook = createIdleHook(input, config, dedup);
   const questionHooks = createQuestionHooks(config, dedup);

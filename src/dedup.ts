@@ -5,29 +5,18 @@ export interface DedupChecker {
   clear(): void;
 }
 
-export function createDedupChecker(enabled: boolean): DedupChecker {
-  if (!enabled) {
-    // When disabled, always return false (never a duplicate)
-    return {
-      isDuplicate: () => false,
-      clear: () => {},
-    };
-  }
-
+export function createDedupChecker(): DedupChecker {
   const TTL_MS = 5 * 60 * 1000; // 5 minutes
   const MAX_SIZE = 100;
 
-  // Map from hash → timestamp when it was added
   const seen = new Map<string, number>();
 
   function hashPayload(payload: NotificationPayload): string {
-    // Simple deterministic hash: type + title + key context fields
     const key = `${payload.type}:${payload.title}:${payload.context.userRequest ?? ""}:${payload.context.question ?? ""}`;
-    // Use a simple djb2-style hash (no crypto needed for dedup)
     let hash = 5381;
     for (let i = 0; i < key.length; i++) {
       hash = ((hash << 5) + hash) ^ key.charCodeAt(i);
-      hash = hash >>> 0; // keep as unsigned 32-bit
+      hash = hash >>> 0;
     }
     return hash.toString(16);
   }
@@ -41,7 +30,6 @@ export function createDedupChecker(enabled: boolean): DedupChecker {
 
   function evictOldestIfFull(): void {
     if (seen.size >= MAX_SIZE) {
-      // Delete the first (oldest) entry
       const firstKey = seen.keys().next().value;
       if (firstKey !== undefined) seen.delete(firstKey);
     }

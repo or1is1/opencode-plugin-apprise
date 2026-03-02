@@ -1,7 +1,7 @@
 import type { Hooks } from "@opencode-ai/plugin";
 import type { Permission } from "@opencode-ai/sdk";
 import type { DedupChecker } from "../dedup.js";
-import { formatNotification } from "../formatter.js";
+import { formatNotification, DEFAULT_TRUNCATE_LENGTH } from "../formatter.js";
 import { sendNotification } from "../notifier.js";
 import type { PluginConfig } from "../types.js";
 
@@ -45,7 +45,7 @@ export function createPermissionHooks(
     if (dedup.isDuplicate(payload)) return;
 
     try {
-      const formatted = formatNotification(payload, config.truncateLength);
+      const formatted = formatNotification(payload, DEFAULT_TRUNCATE_LENGTH);
       await sendNotification(config, formatted);
     } catch (err: unknown) {
       console.warn("[opencode-apprise-notify] permission hook error:", err);

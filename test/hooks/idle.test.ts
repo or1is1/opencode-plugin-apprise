@@ -19,8 +19,6 @@ function makeInput(client: MockClient): PluginInput {
 
 function makeConfig(idleDelayMs: number): PluginConfig {
   return {
-    appriseUrls: ["mock://apprise"],
-    appriseConfigPath: undefined,
     idleDelayMs,
     truncateLength: 1500,
     deduplication: true,
