@@ -100,6 +100,24 @@ urls:
 - **Too many notifications**: Set `OPENCODE_NOTIFY_DEDUP=true` (default) to enable deduplication.
 - **Notifications cut off**: Increase `OPENCODE_NOTIFY_TRUNCATE` to allow longer messages.
 
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feat/my-feature`)
+3. Write tests first (TDD)
+4. Ensure all tests pass (`bun test`)
+5. Submit a pull request
+
+**Development setup:**
+```bash
+git clone https://github.com/or1is1/opencode-apprise-notify.git
+cd opencode-apprise-notify
+bun install
+pip install apprise  # Required for integration tests
+bun test
+```
 ## License
 
 MIT

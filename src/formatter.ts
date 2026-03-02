@@ -14,8 +14,24 @@ const TYPE_MAP: Record<string, AppriseNotificationType> = {
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
 
-  const keepLength = maxLength - 20;
-  return text.slice(0, keepLength) + "\n...(truncated)";
+  const lines = text.split("\n");
+  if (lines.length <= 10) {
+    // Not enough lines for front/back split, fall back to char truncation
+    const keepLength = maxLength - 20;
+    return text.slice(0, keepLength) + "\n...(truncated)";
+  }
+
+  const head = lines.slice(0, 5).join("\n");
+  const tail = lines.slice(-5).join("\n");
+  const result = head + "\n...(truncated)\n" + tail;
+
+  // Safety net: if still too long, fall back to char truncation
+  if (result.length > maxLength) {
+    const keepLength = maxLength - 20;
+    return text.slice(0, keepLength) + "\n...(truncated)";
+  }
+
+  return result;
 }
 
 export function formatTodoStatus(todos: Array<{ status: string; content: string }>): string {
