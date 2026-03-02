@@ -1,15 +1,78 @@
 # opencode-apprise-notify
 
-To install dependencies:
+OpenCode plugin for multi-service notifications via Apprise.
 
-```bash
-bun install
+## Features
+
+- Multi-service support for 128+ notification services via Apprise.
+- Automatic notifications for session idle events.
+- Notifications for Question tool prompts.
+- Alerts for background task completions.
+- Notifications for permission requests.
+
+## Prerequisites
+
+- OpenCode
+- Python 3.x
+- Apprise (`pip install apprise`)
+
+## Quick Start
+
+1. Install the plugin by adding it to your `opencode.json` plugin array:
+
+   ```json
+   "plugins": ["opencode-apprise-notify"]
+   ```
+
+   Or use the CLI:
+   `opencode plugins add opencode-apprise-notify`
+
+2. Set your notification URLs as an environment variable:
+   `export APPRISE_URLS="slack://T/B/C discord://id/token"`
+
+Note: The `APPRISE_URLS` environment variable takes priority over CLI URLs.
+
+## Configuration
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `APPRISE_URLS` | Comma or space separated Apprise URLs. Required if no `APPRISE_CONFIG`. | None |
+| `APPRISE_CONFIG` | Path to an Apprise configuration file. Required if no `APPRISE_URLS`. | None |
+| `OPENCODE_NOTIFY_IDLE_DELAY` | Delay before idle notification in milliseconds. | 3000 |
+| `OPENCODE_NOTIFY_TRUNCATE` | Maximum message length in characters. | 1500 |
+| `OPENCODE_NOTIFY_DEDUP` | Enable message deduplication. | true |
+| `OPENCODE_NOTIFY_TAG` | Apprise tag filter for notifications. | None |
+
+Messages are truncated at 1,500 characters to stay within limits for Discord, Telegram, and Slack. Notifications do not include sensitive information like API keys or environment variable values.
+
+## Supported Services
+
+Apprise supports many services. Use these URL formats:
+
+- **Slack**: `slack://TokenA/TokenB/TokenC`
+- **Discord**: `discord://webhook_id/webhook_token`
+- **Telegram**: `tgram://bottoken/ChatID`
+- **Email**: `mailto://user:pass@gmail.com`
+
+## Notification Triggers
+
+The plugin sends notifications for these events:
+
+- **Idle**: Triggered when the session remains idle for the configured delay.
+- **Question**: Triggered when the Question tool requires user input.
+- **Background**: Triggered when a background task finishes.
+- **Permission**: Triggered when a tool requires explicit user permission.
+
+## Apprise Config File
+
+You can use a YAML configuration file instead of environment variables. Example `~/.apprise.yml`:
+
+```yaml
+urls:
+  - slack://T/B/C
+  - discord://id/token
 ```
 
-To run:
+## License
 
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.3.8. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+MIT
