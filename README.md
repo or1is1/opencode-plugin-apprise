@@ -5,7 +5,7 @@ OpenCode plugin for multi-service notifications via Apprise.
 ## Features
 
 - Multi-service support for 128+ notification services via Apprise.
-- Automatic notifications when foreground sessions go idle (background tasks are excluded).
+- Automatic notifications when foreground sessions go idle, with a 30-second grace period (background tasks are excluded).
 - Delayed notifications for Question tool prompts (30-second grace period).
 - Notifications for permission requests with dual-mechanism reliability.
 
@@ -64,7 +64,7 @@ For complete configuration options, see: https://github.com/caronc/apprise#confi
 
 | Setting | Value |
 |---------|:------|
-| Maximum message length | 1,500 characters |
+| Idle notification delay | 30 seconds |
 | Deduplication TTL | 5 minutes (max 100 entries) |
 | Question notification delay | 30 seconds |
 | Apprise CLI timeout | 30 seconds |
@@ -73,7 +73,7 @@ For complete configuration options, see: https://github.com/caronc/apprise#confi
 
 ### Idle
 
-Fires when a foreground session goes idle. Only sessions where the user has sent at least one message are tracked — background agent sessions are excluded. Includes the last user request, agent response, and todo status.
+Fires 30 seconds after a foreground session goes idle. If the session becomes active again within 30 seconds, the notification is cancelled. Only root sessions (no parent) are notified — background agent sessions are automatically excluded. Includes the last user request, agent response, and todo status.
 
 **Severity**: info
 
@@ -124,10 +124,6 @@ For a complete list, see: https://github.com/caronc/apprise#supported-notificati
 
 ## How It Works
 
-### Message Truncation
-
-Messages exceeding 1,500 characters are truncated. For messages with more than 10 lines, the first 5 and last 5 lines are preserved with a `...(truncated)` marker. Otherwise, a simple character truncation is applied.
-
 ### Deduplication
 
 Identical notifications are suppressed for 5 minutes. Duplicates are identified by a hash of the notification type, title, user request, and question text. The cache holds a maximum of 100 entries with LRU eviction.
@@ -146,7 +142,6 @@ Identical notifications are suppressed for 5 minutes. Duplicates are identified 
 - **No notifications received**: Check your Apprise config file (`~/.apprise`, `~/.apprise.yml`, or `~/.config/apprise/apprise.yml`) and test with `apprise -t test -b test`.
 - **Notifications not reaching a specific service**: Set `OPENCODE_NOTIFY_TAG` to match the tag assigned to that service in your Apprise config.
 - **Too many notifications**: Deduplication suppresses identical notifications for 5 minutes.
-- **Notifications cut off**: Messages are truncated at 1,500 characters.
 - **Apprise command hangs**: The CLI timeout is 30 seconds. If Apprise doesn't respond in time, the notification fails silently.
 
 ## Contributing

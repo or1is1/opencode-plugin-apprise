@@ -1,6 +1,6 @@
 {
   "name": "opencode-plugin-apprise",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "OpenCode plugin that sends rich notifications via Apprise CLI when the agent needs your attention",
   "type": "module",
   "main": "dist/opencode-plugin-apprise.js",
