@@ -25,6 +25,7 @@ export function createIdleHook(
   ctx: PluginInput,
   config: PluginConfig,
   dedup: DedupChecker,
+  interactiveSessions: Set<string>,
 ): NonNullable<Hooks["event"]> {
   return async ({ event }) => {
     if (event.type !== "session.status") return;
@@ -32,6 +33,7 @@ export function createIdleHook(
     const props = event.properties as { sessionID: string; status: { type: string } };
     if (props.status.type !== "idle") return;
     if (!props.sessionID) return;
+    if (!interactiveSessions.has(props.sessionID)) return;
 
     let userRequest: string | undefined = undefined;
     let agentResponse: string | undefined = undefined;

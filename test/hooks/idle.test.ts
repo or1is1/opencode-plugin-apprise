@@ -62,7 +62,8 @@ describe("createIdleHook", () => {
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup());
+    const interactiveSessions = new Set(["s-1"]);
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup(), interactiveSessions);
 
     await hook(makeIdleEvent("s-1"));
 
@@ -78,7 +79,8 @@ describe("createIdleHook", () => {
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup());
+    const interactiveSessions = new Set(["s-1"]);
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup(), interactiveSessions);
 
     await hook({
       event: {
@@ -99,7 +101,8 @@ describe("createIdleHook", () => {
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup());
+    const interactiveSessions = new Set(["s-1"]);
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup(), interactiveSessions);
 
     await hook({
       event: {
@@ -110,6 +113,43 @@ describe("createIdleHook", () => {
 
     expect(client.session.messages).not.toHaveBeenCalled();
     expect(sendSpy).not.toHaveBeenCalled();
+  });
+
+  it("ignores idle events for non-interactive (background) sessions", async () => {
+    const client: MockClient = {
+      session: {
+        messages: mock(() => Promise.resolve({ data: [] })),
+        todo: mock(() => Promise.resolve({ data: [] })),
+      },
+    };
+
+    const interactiveSessions = new Set<string>(); // empty — no foreground sessions
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup(), interactiveSessions);
+
+    await hook(makeIdleEvent("background-session-1"));
+
+    expect(client.session.messages).not.toHaveBeenCalled();
+    expect(sendSpy).not.toHaveBeenCalled();
+  });
+
+  it("sends notification only for sessions tracked as interactive", async () => {
+    const client: MockClient = {
+      session: {
+        messages: mock(() => Promise.resolve({ data: [] })),
+        todo: mock(() => Promise.resolve({ data: [] })),
+      },
+    };
+
+    const interactiveSessions = new Set(["fg-1"]);
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup(), interactiveSessions);
+
+    // Background session — should be ignored
+    await hook(makeIdleEvent("bg-1"));
+    expect(sendSpy).not.toHaveBeenCalled();
+
+    // Foreground session — should send
+    await hook(makeIdleEvent("fg-1"));
+    expect(sendSpy).toHaveBeenCalledTimes(1);
   });
 
   it("sends idle notification with rich context", async () => {
@@ -144,7 +184,8 @@ describe("createIdleHook", () => {
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(), dedup);
+    const interactiveSessions = new Set(["s-2"]);
+    const hook = createIdleHook(makeInput(client), makeConfig(), dedup, interactiveSessions);
 
     await hook(makeIdleEvent("s-2"));
 
@@ -163,7 +204,8 @@ describe("createIdleHook", () => {
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup(true));
+    const interactiveSessions = new Set(["s-4"]);
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup(true), interactiveSessions);
 
     await hook(makeIdleEvent("s-4"));
 
@@ -179,7 +221,8 @@ describe("createIdleHook", () => {
       },
     };
 
-    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup());
+    const interactiveSessions = new Set(["s-5"]);
+    const hook = createIdleHook(makeInput(client), makeConfig(), makeDedup(), interactiveSessions);
 
     await hook(makeIdleEvent("s-5"));
 

@@ -2,7 +2,7 @@ export interface PluginConfig {
   tag?: string;
 }
 
-export type HookEventType = "idle" | "question" | "background" | "permission";
+export type HookEventType = "idle" | "question" | "permission";
 
 export type AppriseNotificationType = "info" | "warning" | "success" | "failure";
 
@@ -12,7 +12,6 @@ export interface NotificationContext {
   question: string | undefined;
   options: string[] | undefined;
   todoStatus: string | undefined;
-  taskName: string | undefined;
   toolName: string | undefined;
   action: string | undefined;
 }

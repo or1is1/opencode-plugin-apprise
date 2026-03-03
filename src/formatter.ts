@@ -8,7 +8,6 @@ import type {
 const TYPE_MAP: Record<HookEventType, AppriseNotificationType> = {
   idle: "info",
   question: "warning",
-  background: "success",
   permission: "warning",
 };
 
@@ -76,13 +75,6 @@ export function formatNotification(
       if (context.options && context.options.length > 0) {
         parts.push(`Options:\n${context.options.map((option, index) => `  ${index + 1}. ${option}`).join("\n")}`);
       }
-      body = parts.join("\n\n");
-      break;
-    }
-    case "background": {
-      const parts: string[] = [];
-      if (context.taskName) parts.push(`Task: ${context.taskName}`);
-      if (context.agentResponse) parts.push(`Result: ${context.agentResponse}`);
       body = parts.join("\n\n");
       break;
     }

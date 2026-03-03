@@ -8,7 +8,6 @@ const emptyContext: NotificationContext = {
   question: undefined,
   options: undefined,
   todoStatus: undefined,
-  taskName: undefined,
   toolName: undefined,
   action: undefined,
 };
@@ -51,20 +50,6 @@ describe("Formatter Module", () => {
     expect(formatted.notificationType).toBe("warning");
     expect(formatted.body).toContain("Question: Where should we deploy?");
     expect(formatted.body).toContain("Options:\n  1. staging\n  2. production");
-  });
-
-  it("formatNotification() for background includes task and result", () => {
-    const payload = createPayload("background", {
-      ...emptyContext,
-      taskName: "sync-logs",
-      agentResponse: "completed successfully",
-    });
-
-    const formatted = formatNotification(payload);
-
-    expect(formatted.notificationType).toBe("success");
-    expect(formatted.body).toContain("Task: sync-logs");
-    expect(formatted.body).toContain("Result: completed successfully");
   });
 
   it("formatNotification() for permission includes tool and action", () => {

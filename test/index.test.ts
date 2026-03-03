@@ -60,13 +60,14 @@ describe("Plugin Entrypoint", () => {
     expect(warnSpy).toHaveBeenCalled();
   });
 
-  it("returns event and permission.ask hooks when config is valid", async () => {
+  it("returns event, permission.ask, and chat.message hooks when config is valid", async () => {
     spyOn(notifier, "checkAppriseInstalled").mockResolvedValue(true);
 
     const hooks = await plugin(makePluginInput());
 
     expect(typeof hooks.event).toBe("function");
     expect(typeof hooks["permission.ask"]).toBe("function");
+    expect(typeof hooks["chat.message"]).toBe("function");
   });
 
   it("includes all required hook keys", async () => {
@@ -76,6 +77,7 @@ describe("Plugin Entrypoint", () => {
 
     expect("event" in hooks).toBe(true);
     expect("permission.ask" in hooks).toBe(true);
+    expect("chat.message" in hooks).toBe(true);
   });
 
   it("does not include tool.execute hooks (question is now event-based)", async () => {

@@ -9,7 +9,6 @@ const EMPTY_CONTEXT: NotificationContext = {
   question: undefined,
   options: undefined,
   todoStatus: undefined,
-  taskName: undefined,
   toolName: undefined,
   action: undefined,
 };

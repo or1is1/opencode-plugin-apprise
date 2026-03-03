@@ -29,11 +29,11 @@ describe("Type Definitions", () => {
 
   describe("HookEventType", () => {
     it("should accept valid HookEventType values", () => {
-      const types: HookEventType[] = ["idle", "question", "background", "permission"];
+      const types: HookEventType[] = ["idle", "question", "permission"];
 
       types.forEach((type) => {
         expect(typeof type).toBe("string");
-        expect(["idle", "question", "background", "permission"]).toContain(type);
+        expect(["idle", "question", "permission"]).toContain(type);
       });
     });
   });
@@ -57,7 +57,6 @@ describe("Type Definitions", () => {
         question: "what is this?",
         options: ["option1", "option2"],
         todoStatus: "3/5 completed",
-        taskName: "background task",
         toolName: "my-tool",
         action: "execute",
       };
@@ -74,7 +73,6 @@ describe("Type Definitions", () => {
         question: undefined,
         options: undefined,
         todoStatus: undefined,
-        taskName: undefined,
         toolName: undefined,
         action: undefined,
       };
@@ -95,7 +93,6 @@ describe("Type Definitions", () => {
           question: undefined,
           options: undefined,
           todoStatus: undefined,
-          taskName: undefined,
           toolName: undefined,
           action: undefined,
         },
@@ -104,11 +101,11 @@ describe("Type Definitions", () => {
       expect(typeof payload.type).toBe("string");
       expect(typeof payload.title).toBe("string");
       expect(typeof payload.context).toBe("object");
-      expect(["idle", "question", "background", "permission"]).toContain(payload.type);
+      expect(["idle", "question", "permission"]).toContain(payload.type);
     });
 
     it("should accept NotificationPayload with all event types", () => {
-      const eventTypes: HookEventType[] = ["idle", "question", "background", "permission"];
+      const eventTypes: HookEventType[] = ["idle", "question", "permission"];
 
       eventTypes.forEach((eventType) => {
         const payload: NotificationPayload = {
@@ -120,7 +117,6 @@ describe("Type Definitions", () => {
             question: undefined,
             options: undefined,
             todoStatus: undefined,
-            taskName: undefined,
             toolName: undefined,
             action: undefined,
           },
