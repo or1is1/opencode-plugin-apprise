@@ -56,6 +56,7 @@ export function formatNotification(
     }
     case "permission": {
       const parts: string[] = [];
+      if (context.sessionTitle) parts.push(`📌 TITLE: ${context.sessionTitle}`);
       if (context.toolName) parts.push(`🔧 TOOL: ${context.toolName}`);
       if (context.action) parts.push(`⚡ ACTION: ${context.action}`);
       body = parts.join(SEPARATOR);

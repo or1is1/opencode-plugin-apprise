@@ -1,4 +1,4 @@
-import type { Hooks } from "@opencode-ai/plugin";
+import type { Hooks, PluginInput } from "@opencode-ai/plugin";
 import type { DedupChecker } from "../dedup.js";
 import type { PluginConfig } from "../types.js";
 import { createPayload, sendHookNotification } from "./shared.js";
@@ -11,6 +11,7 @@ export interface PermissionHooks {
 }
 
 export function createPermissionHooks(
+  ctx: PluginInput,
   config: PluginConfig,
   dedup: DedupChecker,
 ): PermissionHooks {
@@ -25,8 +26,21 @@ export function createPermissionHooks(
     const title = (input as unknown as { title?: string }).title ?? "Unknown";
     const pattern = (input as unknown as { pattern?: string | string[] }).pattern;
     const action = Array.isArray(pattern) ? pattern.join(", ") : (pattern ?? "Unknown");
+    const sessionID = (input as unknown as { sessionID?: string }).sessionID;
+
+    let sessionTitle: string | undefined;
+    if (sessionID) {
+      try {
+        const sessionResponse = await ctx.client.session.get({ path: { id: sessionID } });
+        const sessionInfo = sessionResponse.data as unknown as { title?: string };
+        sessionTitle = sessionInfo.title || undefined;
+      } catch {
+        // Session title is optional
+      }
+    }
 
     const payload = createPayload("permission", "🔐 OpenCode Permission Required", {
+      sessionTitle,
       toolName: title,
       action,
     });
@@ -45,7 +59,20 @@ export function createPermissionHooks(
     if (notifiedPermissions.has(permId)) return;
     notifiedPermissions.add(permId);
 
+    let sessionTitle: string | undefined;
+    const sessionID = (props as unknown as { sessionID?: string }).sessionID;
+    if (sessionID) {
+      try {
+        const sessionResponse = await ctx.client.session.get({ path: { id: sessionID } });
+        const sessionInfo = sessionResponse.data as unknown as { title?: string };
+        sessionTitle = sessionInfo.title || undefined;
+      } catch {
+        // Session title is optional
+      }
+    }
+
     const payload = createPayload("permission", "🔐 OpenCode Permission Required", {
+      sessionTitle,
       toolName: props.permission ?? "Unknown",
       action: props.patterns?.join(", ") ?? "Unknown",
     });

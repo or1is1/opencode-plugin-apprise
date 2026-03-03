@@ -31,8 +31,8 @@ const plugin: Plugin = async (input) => {
   const dedup = createDedupChecker();
 
   const idleHook = createIdleHook(input, config, dedup);
-  const questionHook = createQuestionHook(config, dedup);
-  const permissionHooks = createPermissionHooks(config, dedup);
+  const questionHook = createQuestionHook(input, config, dedup);
+  const permissionHooks = createPermissionHooks(input, config, dedup);
 
   const combinedEventHook: NonNullable<Hooks["event"]> = async ({ event }) => {
     await questionHook({ event });

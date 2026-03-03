@@ -1,9 +1,29 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
+import type { PluginInput } from "@opencode-ai/plugin";
 import type { Event as OpencodeEvent, Permission } from "@opencode-ai/sdk";
 import type { DedupChecker } from "../../src/dedup.js";
 import * as notifier from "../../src/notifier.js";
 import type { NotificationPayload, PluginConfig } from "../../src/types.js";
 import { createPermissionHooks } from "../../src/hooks/permission.js";
+
+type MockClient = {
+  session: {
+    get: ReturnType<typeof mock>;
+  };
+};
+
+function makeInput(client: MockClient): PluginInput {
+  return { client } as unknown as PluginInput;
+}
+
+function makeDefaultInput(title: string = "Test Session"): PluginInput {
+  const client: MockClient = {
+    session: {
+      get: mock(() => Promise.resolve({ data: { title } })),
+    },
+  };
+  return makeInput(client);
+}
 
 function makeConfig(): PluginConfig {
   return {
@@ -49,7 +69,7 @@ describe("createPermissionHooks", () => {
   describe("permissionAsk", () => {
     it("sends notification using v1 Permission fields (title, pattern)", async () => {
       const dedup = makeDedup(false);
-      const hooks = createPermissionHooks(makeConfig(), dedup);
+      const hooks = createPermissionHooks(makeDefaultInput(), makeConfig(), dedup);
 
       const permission = makePermission({
         id: "perm-ask-1",
@@ -71,7 +91,7 @@ describe("createPermissionHooks", () => {
 
     it("handles string pattern (non-array)", async () => {
       const dedup = makeDedup(false);
-      const hooks = createPermissionHooks(makeConfig(), dedup);
+      const hooks = createPermissionHooks(makeDefaultInput(), makeConfig(), dedup);
 
       const permission = makePermission({
         id: "perm-str-1",
@@ -87,7 +107,7 @@ describe("createPermissionHooks", () => {
 
     it("falls back to 'Unknown' when title/pattern are missing", async () => {
       const dedup = makeDedup(false);
-      const hooks = createPermissionHooks(makeConfig(), dedup);
+      const hooks = createPermissionHooks(makeDefaultInput(), makeConfig(), dedup);
 
       const permission = makePermission({ id: "perm-fallback-1" });
 
@@ -100,7 +120,7 @@ describe("createPermissionHooks", () => {
 
     it("does not send notification when dedup blocks", async () => {
       const dedup = makeDedup(true);
-      const hooks = createPermissionHooks(makeConfig(), dedup);
+      const hooks = createPermissionHooks(makeDefaultInput(), makeConfig(), dedup);
 
       const permission = makePermission({ id: "perm-dedup-1" });
       await hooks.permissionAsk(permission, { status: "ask" });
@@ -113,7 +133,7 @@ describe("createPermissionHooks", () => {
   describe("eventFallback", () => {
     it("sends notification on permission.asked event with v2 fields", async () => {
       const dedup = makeDedup(false);
-      const hooks = createPermissionHooks(makeConfig(), dedup);
+      const hooks = createPermissionHooks(makeDefaultInput(), makeConfig(), dedup);
 
       await hooks.eventFallback({
         event: {
@@ -139,7 +159,7 @@ describe("createPermissionHooks", () => {
 
     it("ignores non-permission.asked events", async () => {
       const dedup = makeDedup(false);
-      const hooks = createPermissionHooks(makeConfig(), dedup);
+      const hooks = createPermissionHooks(makeDefaultInput(), makeConfig(), dedup);
 
       await hooks.eventFallback({
         event: {
@@ -155,7 +175,7 @@ describe("createPermissionHooks", () => {
   describe("dedup via notifiedPermissions Set", () => {
     it("only notifies once for the same permission ID across both paths", async () => {
       const dedup = makeDedup(false);
-      const hooks = createPermissionHooks(makeConfig(), dedup);
+      const hooks = createPermissionHooks(makeDefaultInput(), makeConfig(), dedup);
 
       const permission = makePermission({
         id: "perm-shared-1",
@@ -184,11 +204,38 @@ describe("createPermissionHooks", () => {
     });
   });
 
+  it("includes sessionTitle in permission notification", async () => {
+    let capturedPayload: NotificationPayload | undefined;
+    const dedup: DedupChecker = {
+      isDuplicate: mock((payload: NotificationPayload) => {
+        capturedPayload = payload;
+        return false;
+      }),
+      clear: mock(() => {}),
+    };
+    const hooks = createPermissionHooks(makeDefaultInput("Build Pipeline"), makeConfig(), dedup);
+
+    const permission = makePermission({
+      id: "perm-title-1",
+      title: "Bash",
+      pattern: ["npm run build"],
+      sessionID: "s-1",
+    } as Record<string, unknown>);
+
+    await hooks.permissionAsk(permission, { status: "ask" });
+
+    expect(capturedPayload).toBeDefined();
+    expect(capturedPayload!.context.sessionTitle).toBe("Build Pipeline");
+
+    const call = sendSpy.mock.calls[0]!;
+    expect(call[1].body).toContain("TITLE: Build Pipeline");
+  });
+
   it("handles sendNotification errors gracefully", async () => {
     const warnSpy = spyOn(console, "warn").mockImplementation(() => {});
     sendSpy.mockRejectedValueOnce(new Error("send failed"));
     const dedup = makeDedup(false);
-    const hooks = createPermissionHooks(makeConfig(), dedup);
+    const hooks = createPermissionHooks(makeDefaultInput(), makeConfig(), dedup);
 
     const permission = makePermission({ id: "perm-err-1" });
     await hooks.permissionAsk(permission, { status: "ask" });
