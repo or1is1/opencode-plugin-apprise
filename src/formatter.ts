@@ -35,27 +35,27 @@ export function formatNotification(
   switch (type) {
     case "idle": {
       const parts: string[] = [];
-      if (context.sessionTitle) parts.push(`📌 **Title:** ${context.sessionTitle}`);
-      if (context.userRequest) parts.push(`📝 **Request:** ${context.userRequest}`);
-      if (context.agentResponse) parts.push(`🤖 **Response:** ${context.agentResponse}`);
-      if (context.todoStatus) parts.push(`📋 **Todo:** ${context.todoStatus}`);
+      if (context.sessionTitle) parts.push(`📌 TITLE: ${context.sessionTitle}`);
+      if (context.userRequest) parts.push(`📝 REQUEST: ${context.userRequest}`);
+      if (context.agentResponse) parts.push(`🤖 RESPONSE: ${context.agentResponse}`);
+      if (context.todoStatus) parts.push(`📋 TODO: ${context.todoStatus}`);
       body = parts.join("\n\n");
       break;
     }
     case "question": {
       const parts: string[] = [];
-      if (context.sessionTitle) parts.push(`📌 **Title:** ${context.sessionTitle}`);
-      if (context.question) parts.push(`❓ **Question:** ${context.question}`);
+      if (context.sessionTitle) parts.push(`📌 TITLE: ${context.sessionTitle}`);
+      if (context.question) parts.push(`❓ QUESTION: ${context.question}`);
       if (context.options && context.options.length > 0) {
-        parts.push(`**Options:**\n${context.options.map((option, index) => `  ${index + 1}. ${option}`).join("\n")}`);
+        parts.push(`OPTIONS:\n${context.options.map((option, index) => `  ${index + 1}. ${option}`).join("\n")}`);
       }
       body = parts.join("\n\n");
       break;
     }
     case "permission": {
       const parts: string[] = [];
-      if (context.toolName) parts.push(`🔧 **Tool:** ${context.toolName}`);
-      if (context.action) parts.push(`⚡ **Action:** ${context.action}`);
+      if (context.toolName) parts.push(`🔧 TOOL: ${context.toolName}`);
+      if (context.action) parts.push(`⚡ ACTION: ${context.action}`);
       body = parts.join("\n\n");
       break;
     }

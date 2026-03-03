@@ -33,9 +33,9 @@ describe("Formatter Module", () => {
     const formatted = formatNotification(payload);
 
     expect(formatted.notificationType).toBe("info");
-    expect(formatted.body).toContain("**Request:** Ship task 6");
-    expect(formatted.body).toContain("**Response:** Formatter and tests added");
-    expect(formatted.body).toContain("**Todo:** ✅ 2 done | ▶️ 1 in_progress");
+    expect(formatted.body).toContain("📝 REQUEST: Ship task 6");
+    expect(formatted.body).toContain("🤖 RESPONSE: Formatter and tests added");
+    expect(formatted.body).toContain("📋 TODO: ✅ 2 done | ▶️ 1 in_progress");
   });
 
   it("formatNotification() for question includes question and options", () => {
@@ -49,8 +49,8 @@ describe("Formatter Module", () => {
     const formatted = formatNotification(payload);
 
     expect(formatted.notificationType).toBe("warning");
-    expect(formatted.body).toContain("**Question:** Where should we deploy?");
-    expect(formatted.body).toContain("**Options:**\n  1. staging\n  2. production");
+    expect(formatted.body).toContain("❓ QUESTION: Where should we deploy?");
+    expect(formatted.body).toContain("OPTIONS:\n  1. staging\n  2. production");
   });
 
   it("formatNotification() for permission includes tool and action", () => {
@@ -63,8 +63,8 @@ describe("Formatter Module", () => {
     const formatted = formatNotification(payload);
 
     expect(formatted.notificationType).toBe("warning");
-    expect(formatted.body).toContain("**Tool:** Bash");
-    expect(formatted.body).toContain("**Action:** Run build");
+    expect(formatted.body).toContain("🔧 TOOL: Bash");
+    expect(formatted.body).toContain("⚡ ACTION: Run build");
   });
 
   it("formatTodoStatus() summarizes mixed todo statuses", () => {
@@ -89,11 +89,11 @@ describe("Formatter Module", () => {
 
     const formatted = formatNotification(payload);
 
-    expect(formatted.body).toContain("**Title:** Apprise plugin v1.2.4 test");
-    expect(formatted.body).toContain("**Request:** Test notification");
-    expect(formatted.body).toContain("**Todo:** ✅ 3 done");
-    const titleIndex = formatted.body.indexOf("**Title:**");
-    const requestIndex = formatted.body.indexOf("**Request:**");
+    expect(formatted.body).toContain("📌 TITLE: Apprise plugin v1.2.4 test");
+    expect(formatted.body).toContain("📝 REQUEST: Test notification");
+    expect(formatted.body).toContain("📋 TODO: ✅ 3 done");
+    const titleIndex = formatted.body.indexOf("📌 TITLE:");
+    const requestIndex = formatted.body.indexOf("📝 REQUEST:");
     expect(titleIndex).toBeLessThan(requestIndex);
   });
 
@@ -107,8 +107,8 @@ describe("Formatter Module", () => {
 
     const formatted = formatNotification(payload);
 
-    expect(formatted.body).toContain("**Title:** Deploy pipeline setup");
-    expect(formatted.body).toContain("**Question:** Which environment?");
+    expect(formatted.body).toContain("📌 TITLE: Deploy pipeline setup");
+    expect(formatted.body).toContain("❓ QUESTION: Which environment?");
   });
 
   it("formatNotification() handles empty context without crashing", () => {
