@@ -1,21 +1,7 @@
 import type { Hooks, PluginInput } from "@opencode-ai/plugin";
 import type { DedupChecker } from "../dedup.js";
-import type { PluginConfig } from "../types.js";
-import { createPayload, sendHookNotification } from "./shared.js";
-
-interface QuestionAskedProperties {
-  id: string;
-  sessionID: string;
-  questions: Array<{
-    question: string;
-    header: string;
-    options: Array<{ label: string; description: string }>;
-  }>;
-}
-
-interface QuestionReplyProperties {
-  requestID: string;
-}
+import type { PluginConfig, QuestionAskedProperties, QuestionReplyProperties } from "../types.js";
+import { createPayload, fetchSessionTitle, sendHookNotification } from "./shared.js";
 
 export function createQuestionHook(
   ctx: PluginInput,
@@ -54,14 +40,7 @@ export function createQuestionHook(
     const timer = setTimeout(async () => {
       timers.delete(requestId);
 
-      let sessionTitle: string | undefined;
-      try {
-        const sessionResponse = await ctx.client.session.get({ path: { id: sessionID } });
-        const sessionInfo = sessionResponse.data as unknown as { title?: string };
-        sessionTitle = sessionInfo.title || undefined;
-      } catch {
-        // Session title is optional — continue without it
-      }
+      const sessionTitle = await fetchSessionTitle(ctx, sessionID);
 
       const payload = createPayload("question", "OpenCode Question", {
         sessionTitle,

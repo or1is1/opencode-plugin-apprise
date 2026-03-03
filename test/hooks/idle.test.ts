@@ -1,35 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
-import type { PluginInput } from "@opencode-ai/plugin";
 import type { Event as OpencodeEvent } from "@opencode-ai/sdk";
 import type { DedupChecker } from "../../src/dedup.js";
 import * as notifier from "../../src/notifier.js";
 import type { NotificationPayload, PluginConfig } from "../../src/types.js";
 import { createIdleHook } from "../../src/hooks/idle.js";
-
-type MockClient = {
-  session: {
-    messages: ReturnType<typeof mock>;
-    todo: ReturnType<typeof mock>;
-    get: ReturnType<typeof mock>;
-  };
-};
-
-function makeInput(client: MockClient): PluginInput {
-  return { client } as unknown as PluginInput;
-}
-
-function makeConfig(): PluginConfig {
-  return {
-    tag: undefined,
-  };
-}
-
-function makeDedup(isDuplicateResult: boolean = false): DedupChecker {
-  return {
-    isDuplicate: mock(() => isDuplicateResult),
-    clear: mock(() => {}),
-  };
-}
+import { makeConfig, makeDedup, makeInput, type MockClient } from "../helpers.js";
 
 function makeIdleEvent(sessionID: string): { event: OpencodeEvent } {
   return {

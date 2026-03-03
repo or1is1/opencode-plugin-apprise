@@ -1,7 +1,7 @@
 import type { Hooks, PluginInput } from "@opencode-ai/plugin";
 import type { DedupChecker } from "../dedup.js";
-import type { PluginConfig } from "../types.js";
-import { createPayload, sendHookNotification } from "./shared.js";
+import type { PermissionAskedProperties, PluginConfig } from "../types.js";
+import { createPayload, fetchSessionTitle, sendHookNotification } from "./shared.js";
 
 export interface PermissionHooks {
   /** Primary: permission.ask hook */
@@ -28,16 +28,7 @@ export function createPermissionHooks(
     const action = Array.isArray(pattern) ? pattern.join(", ") : (pattern ?? "Unknown");
     const sessionID = (input as unknown as { sessionID?: string }).sessionID;
 
-    let sessionTitle: string | undefined;
-    if (sessionID) {
-      try {
-        const sessionResponse = await ctx.client.session.get({ path: { id: sessionID } });
-        const sessionInfo = sessionResponse.data as unknown as { title?: string };
-        sessionTitle = sessionInfo.title || undefined;
-      } catch {
-        // Session title is optional
-      }
-    }
+    const sessionTitle = sessionID ? await fetchSessionTitle(ctx, sessionID) : undefined;
 
     const payload = createPayload("permission", "OpenCode Permission Required", {
       sessionTitle,
@@ -53,23 +44,14 @@ export function createPermissionHooks(
     const eventType: string = event.type;
     if (eventType !== "permission.asked") return;
 
-    const props = (event as unknown as { properties: { id: string; permission: string; patterns: string[] } }).properties;
+    const props = (event as unknown as { properties: PermissionAskedProperties }).properties;
 
     const permId = props.id ?? "unknown";
     if (notifiedPermissions.has(permId)) return;
     notifiedPermissions.add(permId);
 
-    let sessionTitle: string | undefined;
     const sessionID = (props as unknown as { sessionID?: string }).sessionID;
-    if (sessionID) {
-      try {
-        const sessionResponse = await ctx.client.session.get({ path: { id: sessionID } });
-        const sessionInfo = sessionResponse.data as unknown as { title?: string };
-        sessionTitle = sessionInfo.title || undefined;
-      } catch {
-        // Session title is optional
-      }
-    }
+    const sessionTitle = sessionID ? await fetchSessionTitle(ctx, sessionID) : undefined;
 
     const payload = createPayload("permission", "OpenCode Permission Required", {
       sessionTitle,

@@ -1,42 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
-import type { PluginInput } from "@opencode-ai/plugin";
 import type { Event as OpencodeEvent, Permission } from "@opencode-ai/sdk";
 import type { DedupChecker } from "../../src/dedup.js";
 import * as notifier from "../../src/notifier.js";
 import type { NotificationPayload, PluginConfig } from "../../src/types.js";
 import { createPermissionHooks } from "../../src/hooks/permission.js";
-
-type MockClient = {
-  session: {
-    get: ReturnType<typeof mock>;
-  };
-};
-
-function makeInput(client: MockClient): PluginInput {
-  return { client } as unknown as PluginInput;
-}
-
-function makeDefaultInput(title: string = "Test Session"): PluginInput {
-  const client: MockClient = {
-    session: {
-      get: mock(() => Promise.resolve({ data: { title } })),
-    },
-  };
-  return makeInput(client);
-}
-
-function makeConfig(): PluginConfig {
-  return {
-    tag: undefined,
-  };
-}
-
-function makeDedup(isDuplicateResult: boolean = false): DedupChecker {
-  return {
-    isDuplicate: mock(() => isDuplicateResult),
-    clear: mock(() => {}),
-  };
-}
+import { makeConfig, makeDedup, makeDefaultInput } from "../helpers.js";
 
 function makePermission(overrides: Partial<Permission> & Record<string, unknown> = {}): Permission {
   return {

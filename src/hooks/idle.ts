@@ -1,33 +1,8 @@
 import type { Hooks, PluginInput } from "@opencode-ai/plugin";
 import type { DedupChecker } from "../dedup.js";
 import { formatTodoStatus } from "../formatter.js";
-import type { PluginConfig } from "../types.js";
-import { createPayload, sendHookNotification } from "./shared.js";
-
-interface MessagePart {
-  type: string;
-  text?: string;
-  synthetic?: boolean;
-}
-
-interface SessionMessageWrapper {
-  info: { role: string };
-  parts: MessagePart[];
-}
-
-function extractText(parts: MessagePart[]): string | undefined {
-  const textParts = parts.filter((p) => p.type === "text" && p.text);
-  const nonSynthetic = textParts.filter((p) => !p.synthetic);
-  const source = nonSynthetic.length > 0 ? nonSynthetic : textParts;
-  const texts = source.map((p) => p.text as string);
-
-  return texts.join("\n").trim() || undefined;
-}
-
-function isFullySyntheticMessage(parts: MessagePart[]): boolean {
-  const textParts = parts.filter((p) => p.type === "text");
-  return textParts.length > 0 && textParts.every((p) => p.synthetic === true);
-}
+import type { PluginConfig, SessionInfo, SessionMessage } from "../types.js";
+import { createPayload, extractText, isFullySyntheticMessage, sendHookNotification } from "./shared.js";
 
 export function createIdleHook(
   ctx: PluginInput,
@@ -67,7 +42,7 @@ export function createIdleHook(
 
       try {
         const sessionResponse = await ctx.client.session.get({ path: { id: sessionID } });
-        const sessionInfo = sessionResponse.data as unknown as { parentID?: string; title?: string };
+        const sessionInfo = sessionResponse.data as unknown as SessionInfo;
         if (sessionInfo.parentID) return;
 
         const sessionTitle = sessionInfo.title || undefined;
@@ -75,7 +50,7 @@ export function createIdleHook(
         const messagesResponse = await ctx.client.session.messages({
           path: { id: sessionID },
         });
-        const messages = (messagesResponse.data ?? []) as unknown as SessionMessageWrapper[];
+        const messages = (messagesResponse.data ?? []) as unknown as SessionMessage[];
 
         for (let i = messages.length - 1; i >= 0; i--) {
           const msg = messages[i];
