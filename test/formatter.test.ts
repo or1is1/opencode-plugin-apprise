@@ -111,6 +111,33 @@ describe("Formatter Module", () => {
     expect(formatted.body).toContain("❓ QUESTION: Which environment?");
   });
 
+  it("formatNotification() separates fields with a visual divider line", () => {
+    const payload = createPayload("idle", {
+      ...emptyContext,
+      sessionTitle: "Test session",
+      userRequest: "Do something",
+      agentResponse: "Done",
+    });
+
+    const formatted = formatNotification(payload);
+
+    expect(formatted.body).toContain("────────────────────");
+    const segments = formatted.body.split("────────────────────");
+    expect(segments.length).toBe(3);
+  });
+
+  it("formatNotification() has no divider when only one field is present", () => {
+    const payload = createPayload("idle", {
+      ...emptyContext,
+      userRequest: "Solo field",
+    });
+
+    const formatted = formatNotification(payload);
+
+    expect(formatted.body).toBe("📝 REQUEST: Solo field");
+    expect(formatted.body).not.toContain("────────────────────");
+  });
+
   it("formatNotification() handles empty context without crashing", () => {
     const payload = createPayload("idle", { ...emptyContext });
 

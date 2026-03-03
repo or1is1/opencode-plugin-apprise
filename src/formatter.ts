@@ -5,6 +5,8 @@ import type {
   NotificationPayload,
 } from "./types.js";
 
+const SEPARATOR = "\n\n────────────────────\n\n";
+
 const TYPE_MAP: Record<HookEventType, AppriseNotificationType> = {
   idle: "info",
   question: "warning",
@@ -39,7 +41,7 @@ export function formatNotification(
       if (context.userRequest) parts.push(`📝 REQUEST: ${context.userRequest}`);
       if (context.agentResponse) parts.push(`🤖 RESPONSE: ${context.agentResponse}`);
       if (context.todoStatus) parts.push(`📋 TODO: ${context.todoStatus}`);
-      body = parts.join("\n\n");
+      body = parts.join(SEPARATOR);
       break;
     }
     case "question": {
@@ -49,14 +51,14 @@ export function formatNotification(
       if (context.options && context.options.length > 0) {
         parts.push(`OPTIONS:\n${context.options.map((option, index) => `  ${index + 1}. ${option}`).join("\n")}`);
       }
-      body = parts.join("\n\n");
+      body = parts.join(SEPARATOR);
       break;
     }
     case "permission": {
       const parts: string[] = [];
       if (context.toolName) parts.push(`🔧 TOOL: ${context.toolName}`);
       if (context.action) parts.push(`⚡ ACTION: ${context.action}`);
-      body = parts.join("\n\n");
+      body = parts.join(SEPARATOR);
       break;
     }
     default:
