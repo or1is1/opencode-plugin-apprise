@@ -167,12 +167,12 @@ describe("createIdleHook", () => {
         messages: mock(() =>
           Promise.resolve({ data: [
             {
-              role: "user",
-              content: [{ text: "Need an update" }],
+              info: { role: "user" },
+              parts: [{ type: "text", text: "Need an update" }],
             },
             {
-              role: "assistant",
-              content: [{ text: "Working on it" }],
+              info: { role: "assistant" },
+              parts: [{ type: "text", text: "Working on it" }],
             },
           ] })
         ),

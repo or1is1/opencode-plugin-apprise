@@ -5,9 +5,8 @@ OpenCode plugin for multi-service notifications via Apprise.
 ## Features
 
 - Multi-service support for 128+ notification services via Apprise.
-- Automatic notifications when sessions go idle.
+- Automatic notifications when foreground sessions go idle (background tasks are excluded).
 - Delayed notifications for Question tool prompts (30-second grace period).
-- Alerts when sessions transition to idle after activity.
 - Notifications for permission requests with dual-mechanism reliability.
 
 ## Prerequisites
@@ -74,7 +73,7 @@ For complete configuration options, see: https://github.com/caronc/apprise#confi
 
 ### Idle
 
-Fires immediately when OpenCode emits a `session.idle` event. Includes the last user request, agent response, and todo status.
+Fires when a foreground session goes idle. Only sessions where the user has sent at least one message are tracked — background agent sessions are excluded. Includes the last user request, agent response, and todo status.
 
 **Severity**: info
 
@@ -98,17 +97,6 @@ Options:
   1. yes
   2. no
   3. cancel
-```
-
-### Background
-
-Fires when a session's status transitions to `idle` after being active. This indicates the agent has finished working and the session is waiting.
-
-**Severity**: success
-
-```
-✅ Background Task Complete
-Task: Session ses_abc123
 ```
 
 ### Permission
@@ -150,7 +138,6 @@ Identical notifications are suppressed for 5 minutes. Duplicates are identified 
 |-------|:-------------|
 | Idle | info |
 | Question | warning |
-| Background | success |
 | Permission | warning |
 
 ## Troubleshooting

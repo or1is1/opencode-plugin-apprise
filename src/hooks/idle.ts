@@ -4,21 +4,17 @@ import { formatTodoStatus } from "../formatter.js";
 import type { PluginConfig } from "../types.js";
 import { createPayload, sendHookNotification } from "./shared.js";
 
-interface SessionMessage {
-  role?: string;
-  content?: unknown;
+interface SessionMessageWrapper {
+  info: { role: string };
+  parts: Array<{ type: string; text?: string }>;
 }
 
-function extractText(message: unknown): string | undefined {
-  if (!message || typeof message !== "object") {
-    return undefined;
-  }
+function extractText(parts: Array<{ type: string; text?: string }>): string | undefined {
+  const texts = parts
+    .filter((p) => p.type === "text" && p.text)
+    .map((p) => p.text as string);
 
-  const parts = Array.isArray(message)
-    ? message.map((p: unknown) => typeof p === "string" ? p : ((p as Record<string, unknown>).text as string) || "")
-    : [];
-
-  return parts.join("\n").trim() || undefined;
+  return texts.join("\n").trim() || undefined;
 }
 
 export function createIdleHook(
@@ -43,12 +39,12 @@ export function createIdleHook(
       const messagesResponse = await ctx.client.session.messages({
         path: { id: props.sessionID },
       });
-      const messages = (messagesResponse.data ?? []) as unknown as SessionMessage[];
+      const messages = (messagesResponse.data ?? []) as unknown as SessionMessageWrapper[];
 
       for (let i = messages.length - 1; i >= 0; i--) {
         const msg = messages[i];
-        if (msg?.role === "user") {
-          userRequest = extractText(msg.content);
+        if (msg?.info?.role === "user") {
+          userRequest = extractText(msg.parts);
           break;
         }
       }
@@ -56,8 +52,8 @@ export function createIdleHook(
       if (userRequest) {
         for (let i = messages.length - 1; i >= 0; i--) {
           const msg = messages[i];
-          if (msg?.role === "assistant") {
-            agentResponse = extractText(msg.content);
+          if (msg?.info?.role === "assistant") {
+            agentResponse = extractText(msg.parts);
             break;
           }
         }
