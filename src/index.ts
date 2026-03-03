@@ -29,9 +29,8 @@ const plugin: Plugin = async (input) => {
   }
 
   const dedup = createDedupChecker();
-  const interactiveSessions = new Set<string>();
 
-  const idleHook = createIdleHook(input, config, dedup, interactiveSessions);
+  const idleHook = createIdleHook(input, config, dedup);
   const questionHook = createQuestionHook(config, dedup);
   const permissionHooks = createPermissionHooks(config, dedup);
 
@@ -41,14 +40,9 @@ const plugin: Plugin = async (input) => {
     await idleHook({ event });
   };
 
-  const chatMessageHook: NonNullable<Hooks["chat.message"]> = async (input) => {
-    interactiveSessions.add(input.sessionID);
-  };
-
   return {
     event: combinedEventHook,
     "permission.ask": permissionHooks.permissionAsk,
-    "chat.message": chatMessageHook,
   };
 };
 
